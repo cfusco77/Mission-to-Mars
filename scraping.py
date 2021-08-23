@@ -1,3 +1,4 @@
+
 # Import Splinter, BeautifulSoup, and Pandas
 from splinter import Browser
 from bs4 import BeautifulSoup as soup
@@ -19,6 +20,7 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
+        "hemispheres": mars_hemispheres(browser),
         "last_modified": dt.datetime.now()
     }
 
@@ -96,6 +98,45 @@ def mars_facts():
 
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html(classes="table table-striped")
+
+def mars_hemispheres(browser):
+    
+    #Visit URL
+    url = 'https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars'
+    browser.visit(url)
+    
+
+    hemisphere_image_urls = []
+    links = browser.find_by_css('a.product-item h3')
+
+    #Loop through and click the links 
+    for index in range(len(links)) : 
+        
+
+        #Find elments on each loop 
+        browser.find_by_css('a.product-item h3')[index].click()
+        hemisphere_data = scrape_hemisphere(browser.html) 
+        hemisphere_image_urls.append(hemisphere_data)
+        
+        browser.back()
+
+    return hemisphere_image_urls 
+
+def scrape_hemisphere(html_text):
+    hemi_soup = soup(html_text, "html.parser") 
+    
+    try:
+        title_element = hemi_soup.find("h2", class_="title").get_text()
+        sample_element = hemi_soup.find("a", text ="Sample").get("href")
+    except AttributeError:
+        title_elem = None
+        sample_element = None
+    hempisheres_dictionary = {
+        "title": title_element,
+        "img_url": sample_element
+    }
+                                                                 
+    return hempisheres_dictionary 
 
 if __name__ == "__main__":
 
